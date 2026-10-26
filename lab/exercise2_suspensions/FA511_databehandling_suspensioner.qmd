@@ -1,0 +1,206 @@
+---
+title: "Inspiration til databehandling Suspensioner"
+author: "Judith, Nadia og Gabriela"
+format:
+  html:
+    toc: true
+    code-fold: true
+    code-summary: "Click here for code"
+    embed-resources: true
+execute: 
+  warning: false
+  message: false
+---
+
+# Introduktion
+
+Der er forskellige muligheder for at lave grafer i ggplot (dvs. der kan skrives forskellige koder for at lave samme graf). I den følgende vejledning vil der laves et punkt-linje-diagram, en "stacked" søjlediagram og en simpel søjlediagram.
+
+Der anbefales at først skrive koden som R-skript (alle trin) og derefter sætte Quarto-dokumentet op, hvor I kopierer R-kode ind.
+
+Husk at loade "tidyverse" og "here".
+
+```{r}
+
+library("tidyverse")
+library("here")
+
+```
+
+Der anbefales at oprette en mappe (fx FA511_Lab2) og et R-project i denne mappe. Alle R-filer (R-sript, Quarto fil) og ev. datafiler (excel, hvis I sætter data i excel først) gemmes i denne mappe.
+
+## Punkt-søjle diagram (Suspension A)
+
+Suspension er er en flokkuleret suspension, hvor flokkuleringen er induceret ved den høje grænsefladespænding mellem svovl og vand. Så det er ukontrolleret flokkulering. Suspensionen viser også en meget hurtig sedimentation. Det er derfor meningsfuld at plotte resultater for suspension separat.
+
+For det første laves der en dataframe. Alternativt kan I sætte data op i et excel-ark og importere data (bedst som csv.fil) i RStudio.
+
+```{r}
+
+Susp_A <- data.frame(
+  tid = c(0, 6.2, 11.9, 16.7, 22.16, 27.16, 32.88, 39.01),
+  SV = c(100, 90, 80, 70, 60, 50, 40, 30)
+)
+
+```
+
+Næste trin er at plotte data. I den følgende kode laves grafen ikke som objekt. Grafen kan eksporteres som billedet-fil, hvis I kører koden i R-skript (ikke i selve Quarto dokument). 
+
+```{r}
+
+ggplot(Susp_A)+
+  aes(x=tid, y= SV)+
+  geom_point(color = "blue", size = 2)+
+  geom_line(color = "blue", size = 0.5)+
+  scale_y_continuous(limits = c(0,100), expand = c(0,1))+
+  scale_x_continuous(limits = c(0,40), expand = c(0,1))+
+  labs(y = "Sedimentvolumen (ml)",
+       x = "Tid (s)")+
+  theme_classic()
+
+```
+
+Hvis I vil lave grafen som objekt (som man derefter kan bruge "print" kommando), skal lave grafen som objekt:
+
+
+```{r}
+
+Graf_A <- ggplot(Susp_A)+
+  aes(x=tid, y= SV)+
+  geom_point(color = "blue", size = 2)+
+  geom_line(color = "blue", size = 0.5)+
+  scale_y_continuous(limits = c(0,100), expand = c(0,1))+
+  scale_x_continuous(limits = c(0,40), expand = c(0,1))+
+  labs(y = "Sedimentvolumen (ml)",
+       x = "Tid (s)")+
+  theme_classic()
+
+```
+
+Og så kan den vises med "print":
+
+```{r}
+
+print(Graf_A)
+
+```
+
+# "Stacked" søjlediagram (Suspension B-E)
+
+I suspension B til E var det ofte svært at finde sedimentet og så sket der måske ikke så store ændringer over tiden.
+Derfor kan det være en god idé at illustrerer ændringer i disse suspensioner med en "stacked" søjlediagram, hvor man viser sediment (nederste del af søjlen), grumset supernatant (middel del) og det (mere eller mindre) klare supernatant (øverste del).
+
+Først laves der en datatabel (en eksempel her for suspension B) uden x-akse, da data skal grupperes og tidspunkter ikke tages som tal.
+
+```{r}
+
+# C = sedimentvolumen
+# B = grumset supernatant
+# A = klar supernatant
+# OBS: Det er vigtigt at have den rigtige rækkefølge (nummerisk eller alfabet; A sidder øverst i grafen, B i midten og C nederst)
+
+Susp_B <- data.frame(
+  C = c(0, 5, 10, 12, 12, 12, 12, 12, 12),
+  B = c(95, 80, 70, 63, 63, 60, 58, 53, 48),
+  A = c(5, 15, 20, 25, 25, 28, 30, 35, 40)
+)
+
+```
+
+Der laves en sorteret "lang" tabel og der gives numre (ID) for de forskellige tidspunkter:
+
+```{r}
+
+Susp_B_long <- Susp_B %>%
+  rownames_to_column("ID") %>%
+  pivot_longer(!ID)
+
+```
+
+Der laves en "stacked" søjlediagram og der tilpasses x-aksen (så ID erstattes med tidspunkter):
+
+I grafen her angives voluminer i volumenfraktion (kommando "position = 'fill'"):
+
+```{r}
+Graf_B1 <- ggplot(Susp_B_long) +
+  geom_col(aes(x = ID, y = value, fill = name),
+           position = 'fill',
+           show.legend = FALSE)+
+  scale_x_discrete(labels=c(
+    "1"="0.5",
+    "2"="1",
+    "3"= "2",
+    "4"="10",
+    "5"="15",
+    "6"="30",
+    "7"="45",
+    "8"="60",
+    "9"="90"))+
+  labs(
+    title = "Suspension B",
+    x = "Tid (min)",
+    y = "Volumenfraktion")+
+  theme_classic()
+
+print(Graf_B1)
+```
+
+Det er dog bedre at angive voluminer på y-aksen. Koden ser som følgt ud:
+
+```{r}
+Graf_B2 <- ggplot(Susp_B_long) +
+  geom_col(aes(x = ID, y = value, fill = name),
+           show.legend = FALSE)+
+  scale_x_discrete(labels=c(
+    "1"="0.5",
+    "2"="1",
+    "3"= "2",
+    "4"="10",
+    "5"="15",
+    "6"="30",
+    "7"="45",
+    "8"="60",
+    "9"="90"))+
+  labs(
+    title = "Suspension B",
+    x = "Tid (min)",
+    y = "Volumen (ml)")+
+  theme_classic()
+
+print(Graf_B2)
+
+```
+
+
+Den samme slags graf kan laves for suspension C, D og E og de kunne sættes sammen i en figur.
+
+# Simpel søjlediagram (Sammenligning af sedimentvoluminer)
+
+Der startes igen med at lave en dataframe:
+
+```{r}
+
+Slut_SV <- data.frame(
+  Suspension = c("A","B","C","D","E"),
+  SV = c(18,10,20,16,55)
+)
+
+```
+
+Og så plottes data i en søjlediagram. I er velkommen at tilpasse grafen, fx farve.
+
+```{r}
+
+Graf_SV <- ggplot(Slut_SV)+
+  aes(x= Suspension, y=SV)+
+  geom_col(color = "black", fill="red")+
+  labs(y="Sedimentvolumen (ml)")+
+  theme_classic()+
+  scale_y_continuous(limits=c(0,80),expand = c(0,1))
+
+print(Graf_SV)
+
+```
+
+
+

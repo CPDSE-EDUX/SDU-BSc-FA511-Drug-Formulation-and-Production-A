@@ -1,0 +1,174 @@
+---
+title: "Opsætning af et Quarto dokument"
+author: "JK"
+format:
+  html:
+    toc: true
+    code-fold: true
+    code-summary: "Click here for code"
+    embed-resources: true
+execute: 
+  warning: false
+  message: false  
+---
+
+# 1. Introduktion
+
+Der kan skrives hele rapporter og store opgaver i R/RStudio i et Quarto dokument. Man kan skrive tekst og R-kode er integreret. R-koden kan vises eller skjules. Der kan tilføjes billeder, referencer osv. Rapporter af øvelser "Solubiliering" og "Suspensioner" skal skrives i R/RStudio (Quarto dokument). Standardoption i filformat er "html" (det er nemmest for R at arbejde med), men det er også muligt at lave en pdf eller word fil. Hvis man vil lave en pdf eller word fil, vil det være bedst at starte med html fil og til sidst (når det hele er færdig) skifte til pdf elle word.
+
+Vi vil først bruge simple funktioner til syre/base beregninger og derefter gennemgå hvordan der oprettes et Quarto dokument.
+
+# 2. Simple funktioner
+
+Man kan bruge R lige som en lommeregner og man kan også sætte beregninger op i et kode (funktion), så de kan genbruges. Vi vil skrive korte funktioner til syre/baseberegnigner
+
+Husk at starte med at loade "tidyverse".
+
+```{r}
+
+library("tidyverse")
+library(here)
+
+```
+
+## Beregning af ioniseringsgraden og Bjerrumdiagram af svage syrer
+
+Den første funktion er beregning af ioniseringsgraden af en **svag syre** (andel af stoffet i den ioniserede form, dvs. deprotoneret) ved defineret pH.
+
+```{r}
+
+syre1 <- function(pKa,pH) {
+  fraction_syre <- 10^(pKa-pH)
+  procent_ion <- (1*100)/(fraction_syre+1)
+  print(procent_ion, round(3))
+}
+
+```
+
+Det første trin er at navngive funktionen (jeg har brugt "syre1). I klamren efter funktionen indsættes der argumenter til funktionen. Her er det pKa og pH værdier, som skal angives hvis man kører funktionen. Alt hvad der kommer i {...} kaldes body af funktionen. I dette tilfælde er det først beregningen af fraktion af syren i ioneform og derefter hvad det er i procent. Man kan bruge "print" kommando for at få resultater vist.
+
+Selve funktionen vil ikke give nogen resultat, da argumenter mangler.
+
+Lad os lave beregninger fra første gruppetime: **Ibuprofen (pKa 4,4)**:
+
+Ioniseringsgraden af ibuprofen ved pH 2, 5 og 7,4:
+
+```{r}
+
+syre1(4.4,2)
+syre1(4.4,5)
+syre1(4.4,7.4)
+
+```
+
+Hvis vi vil gerne lave en Bjerrumdiagram med at vise ioniseringsgraden ved forskellilge pH, kan vi generelt bruge samme funktion, men kun med 1 argument (pKa af den svage syre). Intervallet af pH værdier defineres i selve funktionen.
+
+```{r}
+
+syre2 <- function(pKa) {
+  pH <- 1:13
+  syre <- 10^(pKa-pH)
+  ion_procent <- (1*100)/(syre+1)
+  qplot (pH,ion_procent)
+}
+
+```
+
+Der bruges her en simpel plot option i qplot, den kunne dog tilpasses (formatering), fx i ggplot, hvis man ønsker.
+
+**Bjerrumdiagram for ibuprofen (pKa = 4.4)**:
+
+```{r}
+
+syre2(4.4)
+
+```
+
+Hvis man have en svag base, skal der tilpasses koden (og give nyt navn, fx base1 og base2). Hvis man laver beregninger ud fra pKa, giver fraktionen andel af stoffet i baseform (neutral) og fraktion ion sidder i bunden.
+
+```{r}
+
+base1 <- function(pKa,pH) {
+  fraction_ion <- 10^(pKa-pH)
+  procent_ion <- (fraction_ion*100)/(fraction_ion+1)
+  print(procent_ion, round(3))
+}
+
+base2 <- function(pKa) {
+  pH <- 1:13
+  ion <- 10^(pKa-pH)
+  ion_procent <- (ion*100)/(ion+1)
+  qplot (pH,ion_procent)
+}
+
+```
+
+Lad os prøve med **codein (pKa = 8,2)**:
+
+Ioniseringsgrad ved pH 2, 5 og 7,4:
+
+```{r}
+
+base1(8.2,2)
+base1(8.2,5)
+base1(8.2,7.4)
+
+```
+
+Og Bjerrumdiagrammet:
+
+```{r}
+
+base2(8.2)
+
+```
+
+# 3. Opsætning af et Quarto dokument
+
+Du kan oprette et nyt Quarto dokument via File - New File - Quarto Document. Giv en titel og dit navn (autor). Man kan skifte mellem "visual"(som det vil ser ud i dokument) eller "source". Der anbefales at arbejde i "source" (det er hurtigere).
+
+## 3.1. Dokumentegenskaber
+
+Der anbefales at tilpasse dokumentegenskaber (hoved af dokumentet) som følgt:
+
+format:
+  html:
+    toc: true
+    code-fold: true
+    code-summary: "Click here for code"
+    embed-resources: true
+execute: 
+  warning: false
+  message: false
+
+TOC er table of contents (hvis man ikke vil have den, kan der skrives "false"). De andre to kommandoer angiver hvordan koden bliver vist. Embed resources kan være en god idé når man arbejder i et (større) projekt.
+
+Indstillinger i "Execute" fører til at der ikke alt fra koden (fx at loade tidyverse) og fejl bliver vist.
+
+For at "publicere" dokumentet (og kører alt kode) trykker man "Render" (i toppen lidt til venste).
+
+Der anbefales at gemme Quarto dokument som template.
+
+## 3.2. Tekst og kode
+
+Der kan skrives tekst i dokumentet og R-kode kan skrives i de grå feldte. Generelt er det en god idé at srkive koden i R-skrpit (nemmere og hurtigere at gennemføre og tjekke om alt virker, som det skal) og derefter kopiere koden ind i Quarto. Husk at loade tidyverse som første kode.
+
+Du kan indsætte et nyt feldt til R-kode med ctr/alt/i".
+
+## 3.3. Importer et billede
+
+Du kan tilføje et billede med det følgende kommando:
+
+Udråbstegn Figurnummer og tekst, som det skal være teksten i kantede klamre [...] og vejen til filen i runde klamre (...).
+
+![Figur 1: Henderson-Hasselbalch ligninger (fra forelæsningsslider FA511).](D:\DATA_R\FA511\Picture1.jpg)
+
+
+
+```{r}
+
+
+```
+
+
+

@@ -1,0 +1,40 @@
+---
+title: "Titel"
+author: "Navn"
+format:
+  html:
+    toc: true
+    code-fold: true
+    code-summary: "Click here for code"
+    embed-resources: true
+execute: 
+  warning: false
+  message: false
+---
+
+# 1. Titel 1
+
+## 1.1. Titel 2
+
+I et Quarto dokument kan man både skrive tekst og kode, som I vil se nedenunder.
+
+Husk at altid loade "Tidyverse".
+
+```{r}
+
+library("tidyverse")
+
+```
+
+Man kan lave et nyt R-kode sektion med "ctrl"/"alt"/"i".
+
+```{r}
+
+
+```
+
+For at tilføje et billede:
+
+![figurtekst](fil)
+
+I "source" skal der angives vejen til filen samt filnavn. Nemmere at går til "visual"; der kan man browse filen.
